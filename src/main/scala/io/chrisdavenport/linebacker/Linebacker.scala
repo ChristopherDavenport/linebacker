@@ -13,10 +13,10 @@ trait Linebacker[F[_]] {
   def blockingPool: ExecutionContext
 
   /**
-    * Attempts to Run the Given `F[A]` on the blocking pool. 
-    * Then shifts back to the given implicit execution context 
-    * after the Async `F[A]` is evaluated.
-    */
+   * Attempts to Run the Given `F[A]` on the blocking pool.
+   * Then shifts back to the given implicit execution context
+   * after the Async `F[A]` is evaluated.
+   */
   final def block[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
     for {
       _ <- Async.shift(blockingPool)
