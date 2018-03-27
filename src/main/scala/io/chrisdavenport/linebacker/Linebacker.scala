@@ -1,5 +1,6 @@
 package io.chrisdavenport.linebacker
 
+import cats._
 import cats.implicits._
 import cats.effect.{Async, Sync}
 import fs2.Stream
@@ -11,8 +12,18 @@ trait Linebacker[F[_]] {
 
   def blockingPool: ExecutionContext
 
+  /**
+    * Attempts to Run the Given `F[A]` on the blocking pool. 
+    * Then shifts back to the given implicit execution context 
+    * after the Async `F[A]` is evaluated.
+    */
   final def block[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
-    Async.shift(blockingPool) *> fa <* Async.shift(ec)
+    for {
+      _ <- Async.shift(blockingPool)
+      eA <- fa.attempt
+      _ <- Async.shift(ec)
+      a <- Applicative[F].pure(eA).rethrow
+    } yield a
 }
 
 object Linebacker {
