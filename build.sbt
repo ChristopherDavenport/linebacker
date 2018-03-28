@@ -36,7 +36,7 @@ lazy val releaseSettings = Seq(
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   scmInfo := Some(
     ScmInfo(
-      url("https://github.com/functional-streams-for-scala/fs2"),
+      url("https://github.com/ChristopherDavenport/linebacker"),
       "git@github.com:ChristopherDavenport/linebacker.git"
     )
   ),
