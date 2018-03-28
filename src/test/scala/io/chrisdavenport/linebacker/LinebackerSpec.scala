@@ -2,12 +2,17 @@ package io.chrisdavenport.linebacker
 
 import org.specs2._
 import cats.effect.IO
+import cats.implicits._
 import fs2.Stream
 import java.lang.Thread
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.{Executors, ThreadFactory}
 
 class LinebackerSpec extends Spec {
   override def is = s2"""
   Threads Run On Linebacker $runsOnLinebacker
+  Threads Afterwards Run on Provided EC $runsOffLinebackerAfterwards
   """
 
   def runsOnLinebacker = {
@@ -22,5 +27,31 @@ class LinebackerSpec extends Spec {
       .compile
       .last
       .unsafeRunSync must_== Some("linebacker-thread-0")
+  }
+
+  def runsOffLinebackerAfterwards = {
+    val executor = Executors.newCachedThreadPool(new ThreadFactory {
+      private val counter = new AtomicLong(0L)
+
+      def newThread(r: Runnable) = {
+        val th = new Thread(r)
+        th.setName("test-ec-" + counter.getAndIncrement.toString)
+        th.setDaemon(true)
+        th
+      }
+    })
+    implicit val ec = ExecutionContext.fromExecutorService(executor)
+    Linebacker
+      .stream[IO]
+      .flatMap { implicit linebacker =>
+        Stream.eval(
+          Linebacker[IO].block(IO.unit) *>
+            IO(Thread.currentThread().getName)
+            <* IO(executor.shutdownNow)
+        )
+      }
+      .compile
+      .last
+      .unsafeRunSync must_== Some("test-ec-0")
   }
 }
