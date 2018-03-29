@@ -7,16 +7,14 @@ import fs2.Stream
 import scala.concurrent.ExecutionContext
 
 trait DualContext[F[_]] {
-  def blockingContext: F[ExecutionContext]
-  def defaultContext: F[ExecutionContext]
+  def blockingContext: ExecutionContext
+  def defaultContext: ExecutionContext
 
   def block[A](fa: F[A])(implicit F: Async[F]): F[A] =
     for {
-      bEC <- blockingContext
-      dEC <- defaultContext
-      _ <- Async.shift(bEC)
+      _ <- Async.shift(blockingContext)
       aE <- fa.attempt
-      _ <- Async.shift(dEC)
+      _ <- Async.shift(defaultContext)
       a <- Applicative[F].pure(aE).rethrow
     } yield a
 }
@@ -28,16 +26,16 @@ object DualContext {
       default: ExecutionContext,
       blocking: ExecutionContext): DualContext[F] =
     new DualContext[F] {
-      override def blockingContext = Applicative[F].pure(blocking)
-      override def defaultContext = Applicative[F].pure(default)
+      override def blockingContext = blocking
+      override def defaultContext = default
     }
 
-  def fromLinebacker[F[_]: Sync](implicit EC: ExecutionContext): Stream[F, DualContext[F]] =
+  def fromLinebacker[F[_]: Sync](implicit ec: ExecutionContext): Stream[F, DualContext[F]] =
     for {
       lb <- Linebacker.stream[F]
     } yield
       new DualContext[F] {
-        override def blockingContext = Applicative[F].pure(lb.blockingPool)
-        override def defaultContext = Applicative[F].pure(EC)
+        override def blockingContext = lb.blockingPool
+        override def defaultContext = ec
       }
 }
