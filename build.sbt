@@ -23,38 +23,56 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val releaseSettings = Seq(
-  releaseCrossBuild := true,
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishArtifact in Test := false,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  scmInfo := Some(
-    ScmInfo(
-      url("https://github.com/ChristopherDavenport/linebacker"),
-      "git@github.com:ChristopherDavenport/linebacker.git"
-    )
-  ),
-  homepage := Some(url("https://github.com/ChristopherDavenport/linebacker")),
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  publishMavenStyle := true,
-  pomIncludeRepository := { _ =>
-    false
-  },
-  pomExtra := {
-    <developers>
-      {for ((username, name) <- contributors) yield
-      <developer>
-        <id>{username}</id>
-        <name>{name}</name>
-        <url>http://github.com/{username}</url>
-      </developer>
-      }
-    </developers>
-  }
-)
+lazy val releaseSettings = {
+  import ReleaseTransformations._
+  Seq(
+    releaseCrossBuild := true,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      // For non cross-build projects, use releaseStepCommand("publishSigned")
+      releaseStepCommandAndRemaining("+publishSigned"),
+      setNextVersion,
+      commitNextVersion,
+      releaseStepCommand("sonatypeReleaseAll"),
+      pushChanges
+    ),
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (isSnapshot.value)
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    },
+    publishArtifact in Test := false,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    scmInfo := Some(
+      ScmInfo(
+        url("https://github.com/ChristopherDavenport/linebacker"),
+        "git@github.com:ChristopherDavenport/linebacker.git"
+      )
+    ),
+    homepage := Some(url("https://github.com/ChristopherDavenport/linebacker")),
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+    publishMavenStyle := true,
+    pomIncludeRepository := { _ =>
+      false
+    },
+    pomExtra := {
+      <developers>
+        {for ((username, name) <- contributors) yield
+        <developer>
+          <id>{username}</id>
+          <name>{name}</name>
+          <url>http://github.com/{username}</url>
+        </developer>
+        }
+      </developers>
+    }
+  )
+}
