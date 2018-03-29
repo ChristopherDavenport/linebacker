@@ -13,14 +13,23 @@ import scala.concurrent.ExecutionContext
  *
  */
 trait Quarterback[F[_], K] {
-  val select: K => ExecutionContext
+  val select: K => F[ExecutionContext]
   def pass[A](fa: F[A], to: K)(implicit F: Async[F]): F[A] =
-    Async.shift(select(to)) *> fa
+    for {
+      ec <- select(to)
+      _ <- Async.shift(ec)
+      a <- fa
+    } yield a
   def fleaFlicker[A](fa: F[A], initial: K, end: K)(implicit F: Async[F]): F[A] =
     for {
-      _ <- Async.shift(select(initial))
+      iEC <- select(initial)
+      _ <- Async.shift(iEC)
       aE <- fa.attempt
-      _ <- Async.shift(select(end))
+      eEC <- select(end)
+      _ <- Async.shift(eEC)
       a <- Applicative[F].pure(aE).rethrow
     } yield a
+}
+object Quarterback {
+  def apply[F[_], K](implicit ev: Quarterback[F, K]) = ev
 }
