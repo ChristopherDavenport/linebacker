@@ -5,9 +5,8 @@ scala:
   - 2.12.4
   - 2.11.12
 
-before_cache:
-  - find $HOME/.sbt -name "*.lock" -type f -delete
-  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
+jdk:
+  - oraclejdk8
 
 cache:
   directories:
@@ -15,5 +14,9 @@ cache:
     - $HOME/.coursier/cache
     - $HOME/.sbt
 
-jdk:
-  - oraclejdk8
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
+
+after_success:
+- test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && test $TRAVIS_REPO_SLUG == "ChristopherDavenport/linebacker" && sbt +publish
+
