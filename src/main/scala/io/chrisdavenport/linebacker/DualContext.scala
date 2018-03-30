@@ -3,6 +3,7 @@ package io.chrisdavenport.linebacker
 import cats._
 import cats.implicits._
 import cats.effect._
+import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
 
 trait DualContext[F[_]] {
@@ -28,4 +29,12 @@ object DualContext {
       override def blockingContext = blocking
       override def defaultContext = default
     }
+
+  def fromExecutorServices[F[_]: Applicative](
+      default: ExecutorService,
+      blocking: ExecutorService
+  ): DualContext[F] = new DualContext[F] {
+    override def defaultContext = ExecutionContext.fromExecutorService(default)
+    override def blockingContext = ExecutionContext.fromExecutorService(blocking)
+  }
 }
