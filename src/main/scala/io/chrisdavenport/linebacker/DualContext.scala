@@ -3,7 +3,7 @@ package io.chrisdavenport.linebacker
 import cats._
 import cats.implicits._
 import cats.effect._
-import fs2.Stream
+import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
 
 trait DualContext[F[_]] {
@@ -30,12 +30,11 @@ object DualContext {
       override def defaultContext = default
     }
 
-  def fromLinebacker[F[_]: Sync](implicit ec: ExecutionContext): Stream[F, DualContext[F]] =
-    for {
-      lb <- Linebacker.stream[F]
-    } yield
-      new DualContext[F] {
-        override def blockingContext = lb.blockingPool
-        override def defaultContext = ec
-      }
+  def fromExecutorServices[F[_]: Applicative](
+      default: ExecutorService,
+      blocking: ExecutorService
+  ): DualContext[F] = new DualContext[F] {
+    override def defaultContext = ExecutionContext.fromExecutorService(default)
+    override def blockingContext = ExecutionContext.fromExecutorService(blocking)
+  }
 }
