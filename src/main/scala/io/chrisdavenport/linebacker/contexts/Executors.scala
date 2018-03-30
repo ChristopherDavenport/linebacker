@@ -1,16 +1,16 @@
-package io.chrisdavenport
+package io.chrisdavenport.linebacker.contexts
 
 import cats.effect.Sync
 import cats.implicits._
 import fs2.Stream
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{ExecutorService, Executors, ForkJoinPool, ThreadFactory}
+import java.util.concurrent.{ExecutorService, Executors => E, ForkJoinPool, ThreadFactory}
 
-package object contexts {
+object Executors {
 
   object unsafe {
     def unboundExecutorUnsafe[F[_]: Sync]: F[ExecutorService] = Sync[F].delay {
-      Executors.newCachedThreadPool(new ThreadFactory {
+      E.newCachedThreadPool(new ThreadFactory {
         private val counter = new AtomicLong(0L)
 
         def newThread(r: Runnable) = {
@@ -22,16 +22,15 @@ package object contexts {
       })
     }
     def fixedPoolExecutorUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
-      Sync[F].delay { Executors.newFixedThreadPool(n) }
+      Sync[F].delay { E.newFixedThreadPool(n) }
     def workStealingPoolUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
-      Sync[F].delay(Executors.newWorkStealingPool(n))
+      Sync[F].delay(E.newWorkStealingPool(n))
     def forkJoinPoolUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
       Sync[F].delay(new ForkJoinPool(n))
-
   }
   import unsafe._
 
-  def unboundExecutor[F[_]: Sync]: Stream[F, ExecutorService] =
+  def unbound[F[_]: Sync]: Stream[F, ExecutorService] =
     streamExecutorService(unboundExecutorUnsafe)
 
   def fixedPool[F[_]: Sync](n: Int) =

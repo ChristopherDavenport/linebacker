@@ -8,6 +8,7 @@ import java.lang.Thread
 import scala.concurrent.ExecutionContext
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Executors, ThreadFactory}
+import _root_.io.chrisdavenport.linebacker.contexts.{Executors => E}
 
 class LinebackerSpec extends Spec {
   override def is = s2"""
@@ -16,8 +17,8 @@ class LinebackerSpec extends Spec {
   """
 
   def runsOnLinebacker = {
-    Linebacker
-      .stream[IO]
+    E.unbound[IO]
+      .map(Linebacker.fromExecutorService[IO])
       .flatMap { implicit linebacker =>
         import scala.concurrent.ExecutionContext.Implicits.global
         Stream.eval(
@@ -40,18 +41,19 @@ class LinebackerSpec extends Spec {
         th
       }
     })
-    implicit val ec = ExecutionContext.fromExecutorService(executor)
-    Linebacker
-      .stream[IO]
-      .flatMap { implicit linebacker =>
-        Stream.eval(
-          Linebacker[IO].block(IO.unit) *>
-            IO(Thread.currentThread().getName)
-            <* IO(executor.shutdownNow)
-        )
-      }
+    implicit val ec = ExecutionContext
+      .fromExecutorService(executor)
+
+    implicit val linebacker = Linebacker.fromExecutionContext[IO](ec)
+
+    Stream
+      .eval(
+        Linebacker[IO].block(IO.unit) *>
+          IO(Thread.currentThread().getName)
+          <* IO(executor.shutdownNow)
+      )
       .compile
       .last
-      .unsafeRunSync must_== Some("test-ec-0")
+      .unsafeRunSync must_== Some("test-ec-1")
   }
 }
