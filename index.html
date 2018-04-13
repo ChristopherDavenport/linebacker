@@ -3,6 +3,7 @@
 <p>Enabling Functional Blocking where you need it.</p>
 
 <h2 id="quick-start">Quick Start</h2>
+
 <p>To use linebacker in an existing SBT project with Scala 2.11 or a later version, add the following dependency to your
 <code class="highlighter-rouge">build.sbt</code>:</p>
 
@@ -10,6 +11,74 @@
 </code></pre>
 </div>
 
+<h2 id="examples">Examples</h2>
+
+<p>First Some Imports</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.Implicits.global</span>
+<span class="k">import</span> <span class="nn">fs2.Stream</span>
+<span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">cats.implicits._</span>
+<span class="k">import</span> <span class="nn">io.chrisdavenport.linebacker._</span>
+<span class="k">import</span> <span class="nn">_root_.io.chrisdavenport.linebacker.contexts.</span><span class="o">{</span><span class="nc">Executors</span> <span class="k">=&gt;</span> <span class="n">E</span><span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Creatings And Evaluating Pool Behavior</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">getThread</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nc">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="o">().</span><span class="n">getName</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.Implicits.global</span>
+                                                          <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">fs2.Stream</span>
+                  <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">15</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">18</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">io.chrisdavenport.linebacker._</span>
+                                           <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">20</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">_root_.io.chrisdavenport.linebacker.contexts.</span><span class="o">{</span><span class="nc">Executors</span><span class="k">=&gt;</span><span class="n">E</span><span class="o">}</span>
+                                                            <span class="o">^</span>
+<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$927330602</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">object</span> <span class="nc">FakeApp</span> <span class="o">{</span>
+     <span class="o">|</span> <span class="k">val</span> <span class="n">checkRun</span> <span class="k">=</span> <span class="n">E</span><span class="o">.</span><span class="n">unbound</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="c1">// Create Executor
+</span>     <span class="o">|</span>                 <span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="nc">Linebacker</span><span class="o">.</span><span class="n">fromExecutorService</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="k">_</span><span class="o">)</span> <span class="o">)</span> <span class="c1">// Create Linebacker From Executor
+</span>     <span class="o">|</span>                 <span class="o">.</span><span class="n">flatMap</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">linebacker</span> <span class="k">=&gt;</span> <span class="c1">// Raise Implicitly
+</span>     <span class="o">|</span>                   <span class="nc">Stream</span><span class="o">.</span><span class="n">eval</span><span class="o">(</span>
+     <span class="o">|</span>                     <span class="nc">Linebacker</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="n">block</span><span class="o">(</span><span class="n">getThread</span><span class="o">)</span> <span class="c1">// Block On Linebacker Pool Not Global
+</span>     <span class="o">|</span>                   <span class="o">)</span> <span class="o">++</span>
+     <span class="o">|</span>                   <span class="nc">Stream</span><span class="o">.</span><span class="n">eval</span><span class="o">(</span><span class="n">getThread</span><span class="o">)</span> <span class="c1">// Running On Global
+</span>     <span class="o">|</span>                 <span class="o">}.</span><span class="n">compile</span><span class="o">.</span><span class="n">toVector</span>
+     <span class="o">|</span> 
+     <span class="o">|</span> <span class="o">}</span>
+<span class="n">defined</span> <span class="k">object</span> <span class="nc">FakeApp</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="nc">FakeApp</span><span class="o">.</span><span class="n">checkRun</span><span class="o">.</span><span class="n">unsafeRunSync</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.Implicits.global</span>
+                                                          <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">fs2.Stream</span>
+                  <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.effect._</span>
+                          <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">15</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">18</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">io.chrisdavenport.linebacker._</span>
+                                           <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">20</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">_root_.io.chrisdavenport.linebacker.contexts.</span><span class="o">{</span><span class="nc">Executors</span><span class="k">=&gt;</span><span class="n">E</span><span class="o">}</span>
+                                                            <span class="o">^</span>
+<span class="n">res0</span><span class="k">:</span> <span class="kt">Vector</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Vector</span><span class="o">(</span><span class="n">linebacker</span><span class="o">-</span><span class="n">thread</span><span class="o">-</span><span class="mi">0</span><span class="o">,</span> <span class="n">scala</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">context</span><span class="o">-</span><span class="n">global</span><span class="o">-</span><span class="mi">59</span><span class="o">)</span>
+</code></pre>
+</div>
 </div></div></section><section class="technologies"><div class="container"><div class="row"></div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>linebacker is designed and developed by <a href="" target="_blank">Christopher Davenport</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/ChristopherDavenport/linebacker"><span class="fa fa-github"></span>View on GitHub</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/linebacker/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
