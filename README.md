@@ -20,8 +20,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import fs2.Stream
 import cats.effect._
 import cats.implicits._
-import io.chrisdavenport.linebacker._
-import _root_.io.chrisdavenport.linebacker.contexts.{Executors => E}
+import io.chrisdavenport.linebacker.Linebacker
+import io.chrisdavenport.linebacker.contexts.Executors
 ```
 
 Creating And Evaluating Pool Behavior
@@ -30,7 +30,7 @@ Creating And Evaluating Pool Behavior
 val getThread = IO(Thread.currentThread().getName)
 
 object ThreadNameExample {
-  val checkRun = E.unbound[IO] // Create Executor
+  val checkRun = Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .flatMap { implicit linebacker => // Raise Implicitly
       Stream.eval(
