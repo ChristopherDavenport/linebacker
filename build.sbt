@@ -137,6 +137,7 @@ lazy val micrositeSettings = Seq(
     "-Ywarn-unused-import",
     "-Ywarn-numeric-widen",
     "-Ywarn-dead-code",
+    "-Ywarn-unused:imports",
     "-Xlint:-missing-interpolator,_"
   ),
   libraryDependencies += "com.47deg" %% "github4s" % "0.18.4",

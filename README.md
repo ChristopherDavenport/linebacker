@@ -1,4 +1,4 @@
-# Linebacker [![Build Status](https://travis-ci.org/ChristopherDavenport/linebacker.svg?branch=master)](https://travis-ci.org/ChristopherDavenport/linebacker)
+# Linebacker [![Build Status](https://travis-ci.org/ChristopherDavenport/linebacker.svg?branch=master)](https://travis-ci.org/ChristopherDavenport/linebacker) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/linebacker_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/linebacker_2.12) [![Gitter chat](https://badges.gitter.im/christopherdavenport/linebacker.png)](https://gitter.im/christopherdavenport/linebacker)
 
 Enabling Functional Blocking where you need it.
 
@@ -30,15 +30,16 @@ Creatings And Evaluating Pool Behavior
 val getThread = IO(Thread.currentThread().getName)
 
 object FakeApp {
-val checkRun = E.unbound[IO] // Create Executor
-                .map(Linebacker.fromExecutorService[IO](_) ) // Create Linebacker From Executor
-                .flatMap { implicit linebacker => // Raise Implicitly
-                  Stream.eval(
-                    Linebacker[IO].block(getThread) // Block On Linebacker Pool Not Global
-                  ) ++
-                  Stream.eval(getThread) // Running On Global
-                }.compile.toVector
-
+  val checkRun = E.unbound[IO] // Create Executor
+    .map(Linebacker.fromExecutorService[IO](_) ) // Create Linebacker From Executor
+    .flatMap { implicit linebacker => // Raise Implicitly
+      Stream.eval(
+        Linebacker[IO].block(getThread) // Block On Linebacker Pool Not Global
+      ) ++
+      Stream.eval(getThread) // Running On Global
+    }
+    .compile
+    .toVector
 }
 FakeApp.checkRun.unsafeRunSync
 ```
