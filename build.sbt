@@ -1,9 +1,22 @@
+import microsites.ExtraMdFileConfig
+
+lazy val repository = project.in(file("."))
+  .aggregate(linebacker, microsite)
+
 lazy val linebacker = project
-  .in(file("."))
+  .in(file("linebacker"))
   .settings(commonSettings, releaseSettings)
   .settings(
     name := "linebacker"
   )
+
+lazy val microsite = Project(id = "microsite", base = file("docs"))
+  .settings(commonSettings)
+  .settings(micrositeSettings)
+  .settings(skipOnPublishSettings)
+  .enablePlugins(MicrositesPlugin)
+  .enablePlugins(TutPlugin)
+  .dependsOn(linebacker)
 
 lazy val contributors = Seq(
   "ChristopherDavenport" -> "Christopher Davenport"
@@ -88,3 +101,51 @@ lazy val releaseSettings = {
     }
   )
 }
+
+lazy val micrositeSettings = Seq(
+  micrositeName := "linebacker",
+  micrositeDescription := "Thread Pool Management for Scala",
+  micrositeAuthor := "Christopher Davenport",
+  micrositeGithubOwner := "ChristopherDavenport",
+  micrositeGithubRepo := "linebacker",
+  micrositeBaseUrl := "/linebacker",
+  micrositeDocumentationUrl := "https://christopherdavenport.github.io/linebacker",
+  micrositeFooterText := None,
+  micrositeHighlightTheme := "atom-one-light",
+  micrositePalette := Map(
+    "brand-primary" -> "#3e5b95",
+    "brand-secondary" -> "#294066",
+    "brand-tertiary" -> "#2d5799",
+    "gray-dark" -> "#49494B",
+    "gray" -> "#7B7B7E",
+    "gray-light" -> "#E5E5E6",
+    "gray-lighter" -> "#F4F3F4",
+    "white-color" -> "#FFFFFF"
+  ),
+  micrositeExtraMdFiles := Map(
+    file("README.md") -> ExtraMdFileConfig(
+      "index.md",
+      "home",
+      Map("section" -> "home", "position" -> "0")
+    )
+  ),
+  fork in tut := true,
+  scalacOptions in Tut --= Seq(
+    "-Xfatal-warnings",
+    "-Ywarn-unused-import",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-dead-code",
+    "-Xlint:-missing-interpolator,_"
+  ),
+  libraryDependencies += "com.47deg" %% "github4s" % "0.18.4",
+  micrositePushSiteWith := GitHub4s,
+  micrositeGithubToken := sys.env.get("GITHUB_TOKEN")
+)
+
+lazy val skipOnPublishSettings = Seq(
+  skip in publish := true,
+  publish := (()),
+  publishLocal := (()),
+  publishArtifact := false,
+  publishTo := None
+)

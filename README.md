@@ -9,3 +9,7 @@ To use linebacker in an existing SBT project with Scala 2.11 or a later version,
 ```scala
 libraryDependencies += "io.chrisdavenport" %% "linebacker" % "<version>"
 ```
+
+```tut
+val a = 1
+```
