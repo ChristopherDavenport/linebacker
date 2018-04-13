@@ -13,7 +13,7 @@ libraryDependencies += "io.chrisdavenport" %% "linebacker" % "<version>"
 
 ## Examples
 
-First Some Imports
+First some imports
 
 ```tut:silent
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,22 +24,23 @@ import io.chrisdavenport.linebacker._
 import _root_.io.chrisdavenport.linebacker.contexts.{Executors => E}
 ```
 
-Creatings And Evaluating Pool Behavior
+Creating And Evaluating Pool Behavior
 
 ```tut
 val getThread = IO(Thread.currentThread().getName)
 
-object FakeApp {
+object ThreadNameExample {
   val checkRun = E.unbound[IO] // Create Executor
-    .map(Linebacker.fromExecutorService[IO](_) ) // Create Linebacker From Executor
+    .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .flatMap { implicit linebacker => // Raise Implicitly
       Stream.eval(
         Linebacker[IO].block(getThread) // Block On Linebacker Pool Not Global
       ) ++
       Stream.eval(getThread) // Running On Global
     }
+    .evalMap(threadName => IO(println(threadName)))
     .compile
-    .toVector
+    .drain
 }
-FakeApp.checkRun.unsafeRunSync
+ThreadNameExample.checkRun.unsafeRunSync
 ```
