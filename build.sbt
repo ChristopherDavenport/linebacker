@@ -1,6 +1,7 @@
 import microsites.ExtraMdFileConfig
 
-lazy val repository = project.in(file("."))
+lazy val repository = project
+  .in(file("."))
   .settings(commonSettings, skipOnPublishSettings)
   .aggregate(linebacker, microsite)
 
