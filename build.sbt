@@ -47,6 +47,7 @@ lazy val releaseSettings = {
       inquireVersions,
       runClean,
       runTest,
+      releaseStepCommandAndRemaining("+mimaReportBinaryIssues"),
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
@@ -146,8 +147,23 @@ lazy val micrositeSettings = Seq(
 )
 
 lazy val mimaSettings = {
+  import sbtrelease.Version
+  def mimaVersion(version: String) = {
+    val v = Version(version)
+    println(v)
+    v match {
+      case Some(Version(major, Seq(minor, patch), _)) if patch.toInt > 0 =>
+        Some(s"${major}.${minor}.${patch.toInt - 1}")
+      case _ =>
+        None
+    }
+  }
+
   Seq(
-    mimaPreviousArtifacts := Set(organization.value %% name.value % "0.1.0"),
+    mimaFailOnProblem := mimaVersion(version.value).isDefined,
+    mimaPreviousArtifacts := (mimaVersion(version.value) map {
+      organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % _
+    }).toSet,
     mimaBinaryIssueFilters ++= {
       import com.typesafe.tools.mima.core._
       import com.typesafe.tools.mima.core.ProblemFilters._
