@@ -27,7 +27,7 @@
 <p>Creating And Evaluating Pool Behavior</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">getThread</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nc">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="o">().</span><span class="n">getName</span><span class="o">)</span>
-<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$1904228163</span>
+<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$1682769802</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="k">object</span> <span class="nc">ThreadNameExample</span> <span class="o">{</span>
      <span class="o">|</span>   <span class="k">val</span> <span class="n">checkRun</span> <span class="k">=</span> <span class="nc">Executors</span><span class="o">.</span><span class="n">unbound</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="c1">// Create Executor
