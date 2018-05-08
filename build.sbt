@@ -7,7 +7,7 @@ lazy val repository = project
 
 lazy val linebacker = project
   .in(file("linebacker"))
-  .settings(commonSettings, releaseSettings)
+  .settings(commonSettings, releaseSettings, mimaSettings)
   .settings(
     name := "linebacker"
   )
@@ -26,13 +26,13 @@ lazy val contributors = Seq(
 
 lazy val commonSettings = Seq(
   organization := "io.chrisdavenport",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.6",
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.6" cross CrossVersion.binary),
   scalafmtOnCompile := true,
   scalafmtTestOnCompile := true,
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "0.10",
+    "org.typelevel" %% "cats-effect" % "0.10.1",
     "co.fs2"        %% "fs2-core"    % "0.10.3",
     "org.specs2"    %% "specs2-core" % "4.0.3" % Test
   )
@@ -144,6 +144,17 @@ lazy val micrositeSettings = Seq(
   micrositePushSiteWith := GitHub4s,
   micrositeGithubToken := sys.env.get("GITHUB_TOKEN")
 )
+
+lazy val mimaSettings = {
+  Seq(
+    mimaPreviousArtifacts := Set(organization.value %% name.value % "0.0.4"),
+    mimaBinaryIssueFilters ++= {
+      import com.typesafe.tools.mima.core._
+      import com.typesafe.tools.mima.core.ProblemFilters._
+      Seq()
+    }
+  )
+}
 
 lazy val skipOnPublishSettings = Seq(
   skip in publish := true,
