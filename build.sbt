@@ -149,9 +149,7 @@ lazy val micrositeSettings = Seq(
 lazy val mimaSettings = {
   import sbtrelease.Version
   def mimaVersion(version: String) = {
-    val v = Version(version)
-    println(v)
-    v match {
+    Version(v) match {
       case Some(Version(major, Seq(minor, patch), _)) if patch.toInt > 0 =>
         Some(s"${major}.${minor}.${patch.toInt - 1}")
       case _ =>
