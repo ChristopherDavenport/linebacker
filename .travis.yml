@@ -19,6 +19,7 @@ install:
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION test
+  - sbt ++$TRAVIS_SCALA_VERSION mimaReportBinaryIssues
   - sbt ++$TRAVIS_SCALA_VERSION microsite/makeMicrosite
 
 after_success:
