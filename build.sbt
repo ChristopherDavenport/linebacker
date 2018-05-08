@@ -147,7 +147,7 @@ lazy val micrositeSettings = Seq(
 
 lazy val mimaSettings = {
   Seq(
-    mimaPreviousArtifacts := Set(organization.value %% name.value % "0.0.4"),
+    mimaPreviousArtifacts := Set(organization.value %% name.value % "0.1.0"),
     mimaBinaryIssueFilters ++= {
       import com.typesafe.tools.mima.core._
       import com.typesafe.tools.mima.core.ProblemFilters._
