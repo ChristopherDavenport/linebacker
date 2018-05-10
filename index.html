@@ -27,7 +27,7 @@
 <p>Creating And Evaluating Pool Behavior</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">getThread</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nc">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="o">().</span><span class="n">getName</span><span class="o">)</span>
-<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$1682769802</span>
+<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$15891379</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="k">object</span> <span class="nc">ThreadNameExample</span> <span class="o">{</span>
      <span class="o">|</span>   <span class="k">val</span> <span class="n">checkRun</span> <span class="k">=</span> <span class="nc">Executors</span><span class="o">.</span><span class="n">unbound</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="c1">// Create Executor
@@ -46,7 +46,7 @@
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="nc">ThreadNameExample</span><span class="o">.</span><span class="n">checkRun</span><span class="o">.</span><span class="n">unsafeRunSync</span>
 <span class="n">linebacker</span><span class="o">-</span><span class="n">thread</span><span class="o">-</span><span class="mi">0</span>
-<span class="n">scala</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">context</span><span class="o">-</span><span class="n">global</span><span class="o">-</span><span class="mi">91</span>
+<span class="n">scala</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">context</span><span class="o">-</span><span class="n">global</span><span class="o">-</span><span class="mi">93</span>
 </code></pre>
 </div>
 </div></div></section><section class="technologies"><div class="container"><div class="row"></div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>linebacker is designed and developed by <a href="" target="_blank">Christopher Davenport</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/ChristopherDavenport/linebacker"><span class="fa fa-github"></span>View on GitHub</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/linebacker/highlight/highlight.pack.js"></script><script>hljs.configure({
