@@ -44,3 +44,13 @@ object ThreadNameExample {
 }
 ThreadNameExample.checkRun.unsafeRunSync
 ```
+
+Dual Contexts Are Also Very Useful
+
+```tut
+import scala.concurrent.ExecutionContext
+
+Executors.unbound[IO].map(unboundExecutorService => 
+  DualContext.fromExecutionContexts(global, ExecutionContext.fromExecutorService(unboundExecutorService))
+)
+```
