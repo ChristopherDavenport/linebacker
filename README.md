@@ -49,8 +49,9 @@ Dual Contexts Are Also Very Useful
 
 ```tut
 import scala.concurrent.ExecutionContext
+import io.chrisdavenport.linebacker.DualContext
 
-Executors.unbound[IO].map(unboundExecutorService => 
-  DualContext.fromExecutionContexts(global, ExecutionContext.fromExecutorService(unboundExecutorService))
+Executors.unbound[IO].map(blockingExecutor =>
+  DualContext.fromContexts[IO](global,  ExecutionContext.fromExecutorService(blockingExecutor))
 )
 ```
