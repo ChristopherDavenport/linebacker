@@ -28,13 +28,12 @@ lazy val commonSettings = Seq(
   organization := "io.chrisdavenport",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.6" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.7" cross CrossVersion.binary),
   scalafmtOnCompile := true,
   scalafmtTestOnCompile := true,
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "0.10.1",
-    "co.fs2"        %% "fs2-core"    % "0.10.3",
-    "org.specs2"    %% "specs2-core" % "4.0.3" % Test
+    "org.typelevel" %% "cats-effect" % "1.0.0-RC2-d7181dc",
+    "org.specs2"    %% "specs2-core" % "4.2.0" % Test
   )
 )
 

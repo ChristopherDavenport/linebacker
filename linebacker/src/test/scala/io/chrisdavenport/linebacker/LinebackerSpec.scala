@@ -1,9 +1,8 @@
 package io.chrisdavenport.linebacker
 
 import org.specs2._
-import cats.effect.IO
+import cats.effect._
 import cats.implicits._
-import fs2.Stream
 import java.lang.Thread
 import scala.concurrent.ExecutionContext
 import java.util.concurrent.atomic.AtomicLong
@@ -17,17 +16,15 @@ class LinebackerSpec extends Spec {
   """
 
   def runsOnLinebacker = {
-    E.unbound[IO]
+    val testRun = E
+      .unbound[IO]
       .map(Linebacker.fromExecutorService[IO])
-      .flatMap { implicit linebacker =>
+      .use { implicit linebacker =>
         import scala.concurrent.ExecutionContext.Implicits.global
-        Stream.eval(
-          Linebacker[IO].block(IO(Thread.currentThread().getName))
-        )
+        Linebacker[IO].blockEc(IO(Thread.currentThread().getName))
       }
-      .compile
-      .last
-      .unsafeRunSync must_== Some("linebacker-thread-0")
+
+    testRun.unsafeRunSync must_=== "linebacker-thread-0"
   }
 
   def runsOffLinebackerAfterwards = {
@@ -46,14 +43,10 @@ class LinebackerSpec extends Spec {
 
     implicit val linebacker = Linebacker.fromExecutionContext[IO](ec)
 
-    Stream
-      .eval(
-        Linebacker[IO].block(IO.unit) *>
-          IO(Thread.currentThread().getName)
-          <* IO(executor.shutdownNow)
-      )
-      .compile
-      .last
-      .unsafeRunSync must_== Some("test-ec-1")
+    val testRun = Linebacker[IO].blockEc(IO.unit) *>
+      IO(Thread.currentThread().getName) <*
+      IO(executor.shutdownNow)
+
+    testRun.unsafeRunSync must_=== "test-ec-1"
   }
 }

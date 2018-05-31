@@ -17,7 +17,6 @@ First some imports
 
 ```tut:silent
 import scala.concurrent.ExecutionContext.Implicits.global
-import fs2.Stream
 import cats.effect._
 import cats.implicits._
 import io.chrisdavenport.linebacker.Linebacker
@@ -29,20 +28,18 @@ Creating And Evaluating Pool Behavior
 ```tut
 val getThread = IO(Thread.currentThread().getName)
 
-object ThreadNameExample {
-  val checkRun = Executors.unbound[IO] // Create Executor
+val checkRun = {
+  Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
-    .flatMap { implicit linebacker => // Raise Implicitly
-      Stream.eval(
-        Linebacker[IO].block(getThread) // Block On Linebacker Pool Not Global
-      ) ++
-      Stream.eval(getThread) // Running On Global
+    .use{ implicit linebacker => // Raise Implicitly
+      Linebacker[IO].blockEc(getThread) // Block On Linebacker Pool Not Global
+        .flatMap(threadName => IO(println(threadName))) >>
+      getThread // Running On Global
+        .flatMap(threadName => IO(println(threadName)))
     }
-    .evalMap(threadName => IO(println(threadName)))
-    .compile
-    .drain
 }
-ThreadNameExample.checkRun.unsafeRunSync
+
+checkRun.unsafeRunSync
 ```
 
 Dual Contexts Are Also Very Useful
