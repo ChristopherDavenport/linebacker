@@ -17,7 +17,6 @@ First some imports
 
 ```tut:silent
 import scala.concurrent.ExecutionContext.Implicits.global
-import fs2.Stream
 import cats.effect._
 import cats.implicits._
 import io.chrisdavenport.linebacker.Linebacker
