@@ -22,7 +22,7 @@ class LinebackerSpec extends Spec {
       .flatMap { implicit linebacker =>
         import scala.concurrent.ExecutionContext.Implicits.global
         Stream.eval(
-          Linebacker[IO].block(IO(Thread.currentThread().getName))
+          Linebacker[IO].blockShift(IO(Thread.currentThread().getName))
         )
       }
       .compile
@@ -48,7 +48,7 @@ class LinebackerSpec extends Spec {
 
     Stream
       .eval(
-        Linebacker[IO].block(IO.unit) *>
+        Linebacker[IO].blockShift(IO.unit) *>
           IO(Thread.currentThread().getName)
           <* IO(executor.shutdownNow)
       )

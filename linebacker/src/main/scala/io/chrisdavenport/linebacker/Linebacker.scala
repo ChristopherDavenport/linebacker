@@ -11,6 +11,7 @@ trait Linebacker[F[_]] {
   def blockingPool: ExecutionContext
 
   // TODO: REMOVE 0.2
+  @deprecated("0.2.0", "Use blockShift instead.")
   final def block[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
     blockShift(fa)(F, ec)
 

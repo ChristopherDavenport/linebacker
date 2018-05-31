@@ -34,7 +34,7 @@ object ThreadNameExample {
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .flatMap { implicit linebacker => // Raise Implicitly
       Stream.eval(
-        Linebacker[IO].block(getThread) // Block On Linebacker Pool Not Global
+        Linebacker[IO].blockShift(getThread) // Block On Linebacker Pool Not Global
       ) ++
       Stream.eval(getThread) // Running On Global
     }
