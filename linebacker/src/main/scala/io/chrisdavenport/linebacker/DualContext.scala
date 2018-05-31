@@ -10,7 +10,7 @@ trait DualContext[F[_]] {
   def defaultContext: ExecutionContext
 
   def block[A](fa: F[A])(implicit F: Async[F]): F[A] =
-    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => Async.shift[F](defaultContext))
+    dualShift(blockingContext, defaultContext, fa)
 }
 
 object DualContext {

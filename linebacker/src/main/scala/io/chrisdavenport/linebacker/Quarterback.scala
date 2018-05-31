@@ -23,7 +23,7 @@ trait Quarterback[F[_], K] {
     for {
       iEC <- select(initial)
       endEC <- select(end)
-      a <- Async[F].bracket(Async.shift[F](iEC))(_ => fa)(_ => Async.shift(endEC))
+      a <- dualShift(iEC, endEC, fa)
     } yield a
 }
 object Quarterback {

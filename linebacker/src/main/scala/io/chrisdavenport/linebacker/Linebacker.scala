@@ -22,7 +22,7 @@ trait Linebacker[F[_]] {
    * after the Async `F[A]` is evaluated.
    */
   final def blockShift[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
-    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => Async.shift[F](ec))
+    dualShift(blockingContext, ec, fa)
 
   /**
    * Attempts to Run the Given `F[A]` on the blocking pool.
