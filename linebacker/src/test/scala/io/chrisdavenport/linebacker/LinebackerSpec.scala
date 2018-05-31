@@ -24,7 +24,7 @@ class LinebackerSpec extends Spec {
         Linebacker[IO].blockShift(IO(Thread.currentThread().getName))
       }
 
-    testRun.unsafeRunSync must_== Some("linebacker-thread-0")
+    testRun.unsafeRunSync must_=== "linebacker-thread-0"
   }
 
   def runsOffLinebackerAfterwards = {
@@ -47,6 +47,6 @@ class LinebackerSpec extends Spec {
       IO(Thread.currentThread().getName) <*
       IO(executor.shutdownNow)
 
-    testRun.unsafeRunSync must_== Some("test-ec-1")
+    testRun.unsafeRunSync must_=== "test-ec-1"
   }
 }
