@@ -8,14 +8,6 @@ trait Linebacker[F[_]] {
 
   def blockingContext: ExecutionContext
 
-  @deprecated("0.2.0", "Use blockingContext instead.")
-  private[linebacker] def blockingPool: ExecutionContext = blockingContext
-
-  @deprecated("0.2.0", "Use blockShift instead.")
-  final private[linebacker] def block[A](
-      fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
-    blockShift(fa)(F, ec)
-
   /**
    * Attempts to Run the Given `F[A]` on the blocking pool.
    * Then shifts back to the given implicit execution context
