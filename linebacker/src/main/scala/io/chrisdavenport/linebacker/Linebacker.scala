@@ -1,18 +1,19 @@
 package io.chrisdavenport.linebacker
 
-import cats._
-import cats.implicits._
 import cats.effect._
 import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
 
 trait Linebacker[F[_]] {
 
-  def blockingPool: ExecutionContext
+  def blockingContext: ExecutionContext
 
-  // TODO: REMOVE 0.2
+  @deprecated("0.2.0", "Use blockingContext instead.")
+  private[linebacker] def blockingPool: ExecutionContext = blockingContext
+
   @deprecated("0.2.0", "Use blockShift instead.")
-  final def block[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
+  final private[linebacker] def block[A](
+      fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
     blockShift(fa)(F, ec)
 
   /**
@@ -21,33 +22,23 @@ trait Linebacker[F[_]] {
    * after the Async `F[A]` is evaluated.
    */
   final def blockShift[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
-    for {
-      _ <- Async.shift(blockingPool)
-      eA <- fa.attempt
-      _ <- Async.shift(ec)
-      a <- Applicative[F].pure(eA).rethrow
-    } yield a
+    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => Async.shift[F](ec))
 
   /**
    * Attempts to Run the Given `F[A]` on the blocking pool.
    * Then shifts back to the F for the timer.
    */
   final def blockTimer[A](fa: F[A])(implicit F: Async[F], timer: Timer[F]): F[A] =
-    for {
-      _ <- Async.shift(blockingPool)
-      eA <- fa.attempt
-      _ <- timer.shift
-      a <- Applicative[F].pure(eA).rethrow
-    } yield a
+    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => timer.shift)
 }
 
 object Linebacker {
   def apply[F[_]](implicit ev: Linebacker[F]): Linebacker[F] = ev
 
   def fromExecutorService[F[_]](es: ExecutorService): Linebacker[F] = new Linebacker[F] {
-    def blockingPool = ExecutionContext.fromExecutorService(es)
+    def blockingContext = ExecutionContext.fromExecutorService(es)
   }
   def fromExecutionContext[F[_]](ec: ExecutionContext): Linebacker[F] = new Linebacker[F] {
-    def blockingPool = ec
+    def blockingContext = ec
   }
 }

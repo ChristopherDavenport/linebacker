@@ -32,8 +32,7 @@ lazy val commonSettings = Seq(
   scalafmtOnCompile := true,
   scalafmtTestOnCompile := true,
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "0.10.1",
-    "co.fs2"        %% "fs2-core"    % "0.10.4",
+    "org.typelevel" %% "cats-effect" % "1.0.0-RC2-d7181dc",
     "org.specs2"    %% "specs2-core" % "4.2.0" % Test
   )
 )

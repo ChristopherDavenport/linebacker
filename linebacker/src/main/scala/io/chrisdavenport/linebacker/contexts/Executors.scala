@@ -1,8 +1,7 @@
 package io.chrisdavenport.linebacker.contexts
 
-import cats.effect.Sync
+import cats.effect.{Resource, Sync}
 import cats.implicits._
-import fs2.Stream
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ExecutorService, Executors => E, ForkJoinPool, ThreadFactory}
 
@@ -18,7 +17,7 @@ object Executors {
    * resource with the same number of threads.
    */
   def fixedPool[F[_]: Sync](n: Int) =
-    streamExecutorService(fixedPoolExecutorUnsafe(n))
+    executorServiceResource(fixedPoolExecutorUnsafe(n))
 
   /**
    * Constructs an unbound thread pool that will create
@@ -26,8 +25,8 @@ object Executors {
    * if you have a construct that is blocking but
    * self-manages the number of threads you can consume.
    */
-  def unbound[F[_]: Sync]: Stream[F, ExecutorService] =
-    streamExecutorService(unboundExecutorUnsafe)
+  def unbound[F[_]: Sync]: Resource[F, ExecutorService] =
+    executorServiceResource(unboundExecutorUnsafe)
 
   /**
    * A work stealing pool is often a useful blocking
@@ -39,20 +38,18 @@ object Executors {
    * requests or other work.
    */
   def workStealingPool[F[_]: Sync](n: Int) =
-    streamExecutorService(workStealingPoolUnsafe(n))
+    executorServiceResource(workStealingPoolUnsafe(n))
 
   /**
    * Default Pool For Scala, optimized for forked work and then returning to a
    * main pool, generally ideal for your main event loop.
    */
   def forkJoinPool[F[_]: Sync](n: Int) =
-    streamExecutorService(forkJoinPoolUnsafe(n))
+    executorServiceResource(forkJoinPoolUnsafe(n))
 
-  private def streamExecutorService[F[_]: Sync](f: F[ExecutorService]): Stream[F, ExecutorService] =
-    Stream.bracket(f)(
-      _.pure[Stream[F, ?]],
-      es => Sync[F].delay(es.shutdownNow).void
-    )
+  private def executorServiceResource[F[_]: Sync](
+      f: F[ExecutorService]): Resource[F, ExecutorService] =
+    Resource.make[F, ExecutorService](f)(es => Sync[F].delay(es.shutdownNow).void)
 
   object unsafe {
     def unboundExecutorUnsafe[F[_]: Sync]: F[ExecutorService] = Sync[F].delay {
