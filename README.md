@@ -29,19 +29,15 @@ Creating And Evaluating Pool Behavior
 ```tut
 val getThread = IO(Thread.currentThread().getName)
 
-object ThreadNameExample {
-  val checkRun = Executors.unbound[IO] // Create Executor
+Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
-    .flatMap { implicit linebacker => // Raise Implicitly
-      Stream.eval(
-        Linebacker[IO].blockShift(getThread) // Block On Linebacker Pool Not Global
-      ) ++
-      Stream.eval(getThread) // Running On Global
+    .use{ implicit linebacker => // Raise Implicitly
+      Linebacker[IO].blockShift(getThread) // Block On Linebacker Pool Not Global
+        .flatMap(threadName => IO(println(threadName))) >>
+      getThread // Running On Global
+        .flatMap(threadName => IO(println(threadName)))
     }
-    .evalMap(threadName => IO(println(threadName)))
-    .compile
-    .drain
-}
+
 ThreadNameExample.checkRun.unsafeRunSync
 ```
 
