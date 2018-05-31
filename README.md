@@ -28,7 +28,8 @@ Creating And Evaluating Pool Behavior
 ```tut
 val getThread = IO(Thread.currentThread().getName)
 
-Executors.unbound[IO] // Create Executor
+val checkRun = {
+  Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .use{ implicit linebacker => // Raise Implicitly
       Linebacker[IO].blockEc(getThread) // Block On Linebacker Pool Not Global
@@ -36,8 +37,9 @@ Executors.unbound[IO] // Create Executor
       getThread // Running On Global
         .flatMap(threadName => IO(println(threadName)))
     }
+}
 
-ThreadNameExample.checkRun.unsafeRunSync
+checkRun.unsafeRunSync
 ```
 
 Dual Contexts Are Also Very Useful
