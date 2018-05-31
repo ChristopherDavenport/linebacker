@@ -21,7 +21,7 @@ class LinebackerSpec extends Spec {
       .map(Linebacker.fromExecutorService[IO])
       .use { implicit linebacker =>
         import scala.concurrent.ExecutionContext.Implicits.global
-        Linebacker[IO].blockShift(IO(Thread.currentThread().getName))
+        Linebacker[IO].blockEc(IO(Thread.currentThread().getName))
       }
 
     testRun.unsafeRunSync must_=== "linebacker-thread-0"
@@ -43,7 +43,7 @@ class LinebackerSpec extends Spec {
 
     implicit val linebacker = Linebacker.fromExecutionContext[IO](ec)
 
-    val testRun = Linebacker[IO].blockShift(IO.unit) *>
+    val testRun = Linebacker[IO].blockEc(IO.unit) *>
       IO(Thread.currentThread().getName) <*
       IO(executor.shutdownNow)
 

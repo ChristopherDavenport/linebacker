@@ -13,7 +13,7 @@ trait Linebacker[F[_]] {
    * Then shifts back to the given implicit execution context
    * after the Async `F[A]` is evaluated.
    */
-  final def blockShift[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
+  final def blockEc[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
     dualShift(blockingContext, ec, fa)
 
   /**

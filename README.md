@@ -32,7 +32,7 @@ val getThread = IO(Thread.currentThread().getName)
 Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .use{ implicit linebacker => // Raise Implicitly
-      Linebacker[IO].blockShift(getThread) // Block On Linebacker Pool Not Global
+      Linebacker[IO].blockEc(getThread) // Block On Linebacker Pool Not Global
         .flatMap(threadName => IO(println(threadName))) >>
       getThread // Running On Global
         .flatMap(threadName => IO(println(threadName)))
