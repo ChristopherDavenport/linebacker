@@ -11,6 +11,35 @@
 </code></pre>
 </div>
 
+<h2 id="why-linebacker">Why Linebacker</h2>
+
+<p>Concurrency is hard.</p>
+
+<h2 id="no-seriously-why-linebacker">No Seriously, Why Linebacker</h2>
+
+<p>Generally threading models have to deal with the idea that in java/scala some of our fundamental calls
+are still blocking. Looking at you JDBC! In order to handle this we generally utilize Executors or
+ExecutionContexts. Additionally many libraries now utilize implicit execution contexts for their shifting.
+This puts in a position where we need to manually and explicitly pass around two contexts raising one
+explicitly where appropriate and then shifting work back and forth from the pools as appropriate.</p>
+
+<p>Here is where we attempt to make these patterns easier. This library provides abstractions for managing
+pools and shifting behavior between your pools.</p>
+
+<p>Why should you care? Let us propose you have a single pool on 5 threads and you receive 5 requests that
+require communicating with a database. What happens if a 6th call comes in when all these CPU bound threads
+are blocked on network IO? Obviously we are waiting for threads.</p>
+
+<p>Some additional resources for why this is important:</p>
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Thread pool best practices. <br />For more info, see <a href="https://twitter.com/djspiewak?ref_src=twsrc%5Etfw">@djspiewak</a> &amp; <a href="https://twitter.com/alexelcu?ref_src=twsrc%5Etfw">@alexelcu</a> posts:<a href="https://t.co/pr6McpU3tH">https://t.co/pr6McpU3tH</a><a href="https://t.co/Vz617IMjRB">https://t.co/Vz617IMjRB</a> <a href="https://t.co/gJgzZI6yGJ">pic.twitter.com/gJgzZI6yGJ</a></p>&mdash; Impure Pics (@impurepics) <a href="https://twitter.com/impurepics/status/987758585722621957?ref_src=twsrc%5Etfw">April 21, 2018</a></blockquote>
+<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<ul>
+  <li><a href="https://gist.github.com/djspiewak/46b543800958cf61af6efa8e072bfd5c">Thread Pools</a> by Daniel Spiewak</li>
+  <li><a href="https://monix.io/docs/3x/best-practices/blocking.html">Best Practice: Should Not Block Threads</a> by Alexandru Nedelcu/Monix</li>
+</ul>
+
 <h2 id="examples">Examples</h2>
 
 <p>First some imports</p>
@@ -26,7 +55,7 @@
 <p>Creating And Evaluating Pool Behavior</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">getThread</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nc">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="o">().</span><span class="n">getName</span><span class="o">)</span>
-<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$1840378871</span>
+<span class="n">getThread</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$2118374124</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">checkRun</span> <span class="k">=</span> <span class="o">{</span>
      <span class="o">|</span>   <span class="nc">Executors</span><span class="o">.</span><span class="n">unbound</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="c1">// Create Executor
@@ -38,11 +67,11 @@
 </span>     <span class="o">|</span>         <span class="o">.</span><span class="n">flatMap</span><span class="o">(</span><span class="n">threadName</span> <span class="k">=&gt;</span> <span class="nc">IO</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">threadName</span><span class="o">)))</span>
      <span class="o">|</span>     <span class="o">}</span>
      <span class="o">|</span> <span class="o">}</span>
-<span class="n">checkRun</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$686206339</span>
+<span class="n">checkRun</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span> <span class="nc">IO$2012341509</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="n">checkRun</span><span class="o">.</span><span class="n">unsafeRunSync</span>
 <span class="n">linebacker</span><span class="o">-</span><span class="n">thread</span><span class="o">-</span><span class="mi">0</span>
-<span class="n">scala</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">context</span><span class="o">-</span><span class="n">global</span><span class="o">-</span><span class="mi">63</span>
+<span class="n">scala</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">context</span><span class="o">-</span><span class="n">global</span><span class="o">-</span><span class="mi">60</span>
 </code></pre>
 </div>
 
@@ -57,7 +86,7 @@
 <span class="n">scala</span><span class="o">&gt;</span> <span class="nc">Executors</span><span class="o">.</span><span class="n">unbound</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="n">map</span><span class="o">(</span><span class="n">blockingExecutor</span> <span class="k">=&gt;</span>
      <span class="o">|</span>   <span class="nc">DualContext</span><span class="o">.</span><span class="n">fromContexts</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">global</span><span class="o">,</span>  <span class="nc">ExecutionContext</span><span class="o">.</span><span class="n">fromExecutorService</span><span class="o">(</span><span class="n">blockingExecutor</span><span class="o">))</span>
      <span class="o">|</span> <span class="o">)</span>
-<span class="n">res1</span><span class="k">:</span> <span class="kt">cats.effect.Resource</span><span class="o">[</span><span class="kt">cats.effect.IO</span>,<span class="kt">io.chrisdavenport.linebacker.DualContext</span><span class="o">[</span><span class="kt">cats.effect.IO</span><span class="o">]]</span> <span class="k">=</span> <span class="n">cats</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="nc">Resource$$anon$5</span><span class="k">@</span><span class="mf">67d</span><span class="mi">0145</span><span class="n">b</span>
+<span class="n">res1</span><span class="k">:</span> <span class="kt">cats.effect.Resource</span><span class="o">[</span><span class="kt">cats.effect.IO</span>,<span class="kt">io.chrisdavenport.linebacker.DualContext</span><span class="o">[</span><span class="kt">cats.effect.IO</span><span class="o">]]</span> <span class="k">=</span> <span class="n">cats</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="nc">Resource$$anon$5</span><span class="k">@</span><span class="mi">8</span><span class="n">ad2f2b</span>
 </code></pre>
 </div>
 </div></div></section><section class="technologies"><div class="container"><div class="row"></div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>linebacker is designed and developed by <a href="" target="_blank">Christopher Davenport</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/ChristopherDavenport/linebacker"><span class="fa fa-github"></span>View on GitHub</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/linebacker/highlight/highlight.pack.js"></script><script>hljs.configure({
