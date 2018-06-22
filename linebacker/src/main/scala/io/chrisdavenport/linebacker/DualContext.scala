@@ -5,7 +5,7 @@ import cats.effect._
 import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
 
-trait DualContext[F[_]] {
+trait DualContext[F[_]] extends Linebacker[F] {
   def blockingContext: ExecutionContext
   def defaultContext: ExecutionContext
 
