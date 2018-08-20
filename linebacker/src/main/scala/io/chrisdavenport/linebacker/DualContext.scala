@@ -15,7 +15,7 @@ trait DualContext[F[_]] {
       _ <- Async.shift(blockingContext)
       aE <- fa.attempt
       _ <- Async.shift(defaultContext)
-      a <- Applicative[F].pure(aE).rethrow
+      a <- F.fromEither(aE)
     } yield a
 }
 
