@@ -16,7 +16,7 @@ object Executors {
    * a Hikari pool, you may want to back the
    * resource with the same number of threads.
    */
-  def fixedPool[F[_]: Sync](n: Int) =
+  def fixedPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
     executorServiceResource(fixedPoolExecutorUnsafe(n))
 
   /**
@@ -37,14 +37,14 @@ object Executors {
    * 1 as to maximize the other pool for handling
    * requests or other work.
    */
-  def workStealingPool[F[_]: Sync](n: Int) =
+  def workStealingPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
     executorServiceResource(workStealingPoolUnsafe(n))
 
   /**
    * Default Pool For Scala, optimized for forked work and then returning to a
    * main pool, generally ideal for your main event loop.
    */
-  def forkJoinPool[F[_]: Sync](n: Int) =
+  def forkJoinPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
     executorServiceResource(forkJoinPoolUnsafe(n))
 
   private def executorServiceResource[F[_]: Sync](
@@ -66,8 +66,10 @@ object Executors {
     }
     def fixedPoolExecutorUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
       Sync[F].delay { E.newFixedThreadPool(n) }
+
     def workStealingPoolUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
       Sync[F].delay(E.newWorkStealingPool(n))
+
     def forkJoinPoolUnsafe[F[_]: Sync](n: Int): F[ExecutorService] =
       Sync[F].delay(new ForkJoinPool(n))
   }
