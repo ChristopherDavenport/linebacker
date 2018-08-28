@@ -46,8 +46,8 @@ First some imports
 import scala.concurrent.ExecutionContext.Implicits.global
 import cats.effect._
 import cats.implicits._
-import io.chrisdavenport.linebacker.Linebacker
-import io.chrisdavenport.linebacker.contexts.Executors
+import _root_.io.chrisdavenport.linebacker.Linebacker
+import _root_.io.chrisdavenport.linebacker.contexts.Executors
 ```
 
 Creating And Evaluating Pool Behavior

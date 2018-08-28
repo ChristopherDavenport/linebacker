@@ -1,16 +1,20 @@
 import microsites.ExtraMdFileConfig
+import sbtcrossproject.{crossProject, CrossType}
 
 lazy val repository = project
   .in(file("."))
   .settings(commonSettings, releaseSettings, skipOnPublishSettings)
-  .aggregate(linebacker, microsite)
+  .aggregate(linebackerJVM, linebackerJS, microsite)
 
-lazy val linebacker = project
+lazy val linebacker = crossProject(JSPlatform, JVMPlatform)
   .in(file("linebacker"))
   .settings(commonSettings, releaseSettings, mimaSettings)
   .settings(
     name := "linebacker"
   )
+
+lazy val linebackerJVM = linebacker.jvm
+lazy val linebackerJS = linebacker.js
 
 lazy val microsite = Project(id = "microsite", base = file("docs"))
   .settings(commonSettings)
@@ -18,7 +22,7 @@ lazy val microsite = Project(id = "microsite", base = file("docs"))
   .settings(skipOnPublishSettings)
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(TutPlugin)
-  .dependsOn(linebacker)
+  .dependsOn(linebackerJVM)
 
 lazy val contributors = Seq(
   "ChristopherDavenport" -> "Christopher Davenport"
@@ -32,8 +36,8 @@ lazy val commonSettings = Seq(
   scalafmtOnCompile := true,
   scalafmtTestOnCompile := true,
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "1.0.0-RC2",
-    "org.specs2"    %% "specs2-core" % "4.2.0" % Test
+    "org.typelevel" %%% "cats-effect" % "1.0.0-RC2",
+    "org.specs2" %%% "specs2-core"    % "4.2.0" % Test
   )
 )
 
