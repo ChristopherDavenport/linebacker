@@ -20,8 +20,8 @@ trait Linebacker[F[_]] {
    * Attempts to Run the Given `F[A]` on the blocking pool.
    * Then shifts back to the F for the timer.
    */
-  final def blockTimer[A](fa: F[A])(implicit F: Async[F], timer: Timer[F]): F[A] =
-    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => timer.shift)
+  final def blockContextShift[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
+    cs.evalOn(blockingContext)(fa)
 }
 
 object Linebacker {
