@@ -16,13 +16,27 @@ trait DualContext[F[_]] extends Linebacker[F] {
 object DualContext {
   def apply[F[_]](implicit ev: DualContext[F]) = ev
 
-  def fromContexts[F[_]: Applicative](
-      blocking: ExecutionContext,
-      cs: ContextShift[F]): DualContext[F] =
+  def fromContextShift[F[_]: Applicative](
+      cs: ContextShift[F],
+      blocking: ExecutionContext): DualContext[F] =
     new DualContext[F] {
       override def blockingContext = blocking
       override def contextShift = cs
     }
+
+  def fromContexts[F[_]: Applicative](
+      default: ExecutionContext,
+      blocking: ExecutionContext): DualContext[F] = {
+    val contextShift =
+      new ContextShift[F] {
+        def shift: F[Unit] = Async.shift[F](default)
+
+        def evalOn[A](blocking: ExecutionContext)(f: F[A]): F[A] =
+          dualShift(blocking, default, f)
+      }
+
+    fromContextShift(contextShift, blocking)
+  }
 
   def fromExecutorServices[F[_]: Applicative](
       blocking: ExecutorService,
