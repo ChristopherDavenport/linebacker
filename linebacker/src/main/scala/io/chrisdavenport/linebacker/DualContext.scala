@@ -39,10 +39,7 @@ object DualContext {
   }
 
   def fromExecutorServices[F[_]: Applicative](
-      blocking: ExecutorService,
-      cs: ContextShift[F]
-  ): DualContext[F] = new DualContext[F] {
-    override def blockingContext = ExecutionContext.fromExecutorService(blocking)
-    override def contextShift = cs
-  }
+      default: ExecutorService,
+      blocking: ExecutorService): DualContext[F] =
+    fromContexts(ExecutionContext.fromExecutor(default), ExecutionContext.fromExecutor(blocking))
 }
