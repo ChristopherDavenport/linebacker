@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
   scalafmtTestOnCompile := true,
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-effect" % "1.0.0-RC3",
-    "org.specs2"    %% "specs2-core" % "4.2.0" % Test
+    "org.specs2"    %% "specs2-core" % "4.3.4" % Test
   )
 )
 
@@ -140,7 +140,7 @@ lazy val micrositeSettings = Seq(
     "-Ywarn-unused:imports",
     "-Xlint:-missing-interpolator,_"
   ),
-  libraryDependencies += "com.47deg" %% "github4s" % "0.18.4",
+  libraryDependencies += "com.47deg" %% "github4s" % "0.18.8",
   micrositePushSiteWith := GitHub4s,
   micrositeGithubToken := sys.env.get("GITHUB_TOKEN")
 )
