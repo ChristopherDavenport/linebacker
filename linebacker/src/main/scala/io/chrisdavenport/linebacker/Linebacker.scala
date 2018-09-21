@@ -10,18 +10,17 @@ trait Linebacker[F[_]] {
 
   /**
    * Attempts to Run the Given `F[A]` on the blocking pool.
-   * Then shifts back to the given implicit execution context
-   * after the Async `F[A]` is evaluated.
+   * Then shifts back to the F to the Context Shift
+   * Requires Implicit ContextShift Available
    */
-  final def blockEc[A](fa: F[A])(implicit F: Async[F], ec: ExecutionContext): F[A] =
-    dualShift(blockingContext, ec, fa)
+  final def blockContextShift[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
+    cs.evalOn(blockingContext)(fa)
 
   /**
-   * Attempts to Run the Given `F[A]` on the blocking pool.
-   * Then shifts back to the F for the timer.
-   */
-  final def blockTimer[A](fa: F[A])(implicit F: Async[F], timer: Timer[F]): F[A] =
-    F.bracket(Async.shift[F](blockingContext))(_ => fa)(_ => timer.shift)
+   * Same Method as blockContextShift but significantly shorter.
+    **/
+  final def blockCS[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
+    blockContextShift(fa)
 }
 
 object Linebacker {

@@ -43,7 +43,7 @@ Some additional resources for why this is important:
 First some imports
 
 ```tut:silent
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.global
 import cats.effect._
 import cats.implicits._
 import io.chrisdavenport.linebacker.Linebacker
@@ -59,7 +59,8 @@ val checkRun = {
   Executors.unbound[IO] // Create Executor
     .map(Linebacker.fromExecutorService[IO](_)) // Create Linebacker From Executor
     .use{ implicit linebacker => // Raise Implicitly
-      Linebacker[IO].blockEc(getThread) // Block On Linebacker Pool Not Global
+      implicit val cs = IO.contextShift(global)
+      Linebacker[IO].blockCS(getThread) // Block On Linebacker Pool Not Global
         .flatMap(threadName => IO(println(threadName))) >>
       getThread // Running On Global
         .flatMap(threadName => IO(println(threadName)))
@@ -76,6 +77,6 @@ import scala.concurrent.ExecutionContext
 import io.chrisdavenport.linebacker.DualContext
 
 Executors.unbound[IO].map(blockingExecutor =>
-  DualContext.fromContexts[IO](global,  ExecutionContext.fromExecutorService(blockingExecutor))
+  DualContext.fromContexts[IO](IO.contextShift(global),  ExecutionContext.fromExecutorService(blockingExecutor))
 )
 ```

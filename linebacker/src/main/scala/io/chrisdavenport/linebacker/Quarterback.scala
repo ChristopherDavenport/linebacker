@@ -1,6 +1,7 @@
 package io.chrisdavenport.linebacker
 
-import cats.effect.Async
+import cats._
+import cats.effect._
 import cats.implicits._
 import scala.concurrent.ExecutionContext
 
@@ -13,17 +14,10 @@ import scala.concurrent.ExecutionContext
  */
 trait Quarterback[F[_], K] {
   val select: K => F[ExecutionContext]
-  def pass[A](fa: F[A], to: K)(implicit F: Async[F]): F[A] =
+  def pass[A](fa: F[A], to: K)(implicit F: FlatMap[F], CS: ContextShift[F]): F[A] =
     for {
       ec <- select(to)
-      _ <- Async.shift(ec)
-      a <- fa
-    } yield a
-  def fleaFlicker[A](fa: F[A], initial: K, end: K)(implicit F: Async[F]): F[A] =
-    for {
-      iEC <- select(initial)
-      endEC <- select(end)
-      a <- dualShift(iEC, endEC, fa)
+      a <- CS.evalOn(ec)(fa)
     } yield a
 }
 object Quarterback {
