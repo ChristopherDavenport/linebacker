@@ -1,6 +1,5 @@
 package io.chrisdavenport.linebacker
 
-import cats._
 import cats.effect._
 import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
@@ -16,7 +15,7 @@ trait DualContext[F[_]] extends Linebacker[F] {
 object DualContext {
   def apply[F[_]](implicit ev: DualContext[F]) = ev
 
-  def fromContext[F[_]: Applicative](
+  def fromContext[F[_]](
       cs: ContextShift[F],
       blocking: ExecutionContext): DualContext[F] =
     new DualContext[F] {
@@ -24,7 +23,7 @@ object DualContext {
       override def contextShift = cs
     }
 
-  def fromExecutorService[F[_]: Applicative](
+  def fromExecutorService[F[_]](
       default: ContextShift[F],
       blocking: ExecutorService): DualContext[F] =
     fromContext(default, ExecutionContext.fromExecutor(blocking))
