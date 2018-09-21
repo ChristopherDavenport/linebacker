@@ -15,7 +15,7 @@ trait DualContext[F[_]] extends Linebacker[F] {
 object DualContext {
   def apply[F[_]](implicit ev: DualContext[F]) = ev
 
-  def fromContext[F[_]](
+  def fromContexts[F[_]](
       cs: ContextShift[F],
       blocking: ExecutionContext): DualContext[F] =
     new DualContext[F] {
@@ -26,5 +26,5 @@ object DualContext {
   def fromExecutorService[F[_]](
       default: ContextShift[F],
       blocking: ExecutorService): DualContext[F] =
-    fromContext(default, ExecutionContext.fromExecutor(blocking))
+    fromContexts(default, ExecutionContext.fromExecutor(blocking))
 }
