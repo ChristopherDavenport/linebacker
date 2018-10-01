@@ -29,7 +29,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
   scalacOptions += "-Yrangepos",
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.7" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.8" cross CrossVersion.binary),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-effect" % "1.0.0",
     "org.specs2"    %% "specs2-core" % "4.3.4" % Test
