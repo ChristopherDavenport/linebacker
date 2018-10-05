@@ -19,10 +19,12 @@ object Executors {
    * resource with the same number of threads.
    */
   def fixedPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
-    fixedPoolC(n)(Sync[F].delay(E.defaultThreadFactory()))
+    for {
+      factory <- Resource.liftF(Sync[F].delay(E.defaultThreadFactory()))
+      executor <- fixedPoolC(n)(factory)
+    } yield executor
 
-  def fixedPoolC[F[_]: Sync](n: Int)(
-      threadFactory: F[ThreadFactory]): Resource[F, ExecutorService] =
+  def fixedPoolC[F[_]: Sync](n: Int)(threadFactory: ThreadFactory): Resource[F, ExecutorService] =
     executorServiceResource(fixedPoolExecutorUnsafe(n, threadFactory))
 
   /**
@@ -32,9 +34,12 @@ object Executors {
    * self-manages the number of threads you can consume.
    */
   def unbound[F[_]: Sync]: Resource[F, ExecutorService] =
-    unboundC(unboundThreadFactory[F])
+    for {
+      factory <- Resource.liftF(unboundThreadFactory[F])
+      executor <- unboundC[F](factory)
+    } yield executor
 
-  def unboundC[F[_]: Sync](threadFactory: F[ThreadFactory]): Resource[F, ExecutorService] =
+  def unboundC[F[_]: Sync](threadFactory: ThreadFactory): Resource[F, ExecutorService] =
     executorServiceResource(unboundExecutorUnsafe(threadFactory))
 
   /**
@@ -47,10 +52,10 @@ object Executors {
    * requests or other work.
    */
   def workStealingPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
-    workStealingPoolC(n)(Sync[F].point(ForkJoinPool.defaultForkJoinWorkerThreadFactory))
+    workStealingPoolC(n)(ForkJoinPool.defaultForkJoinWorkerThreadFactory)
 
   def workStealingPoolC[F[_]: Sync](n: Int)(
-      threadFactory: F[ForkJoinWorkerThreadFactory]): Resource[F, ExecutorService] =
+      threadFactory: ForkJoinWorkerThreadFactory): Resource[F, ExecutorService] =
     executorServiceResource(workStealingPoolUnsafe(n, threadFactory))
 
   /**
@@ -58,10 +63,10 @@ object Executors {
    * main pool, generally ideal for your main event loop.
    */
   def forkJoinPool[F[_]: Sync](n: Int): Resource[F, ExecutorService] =
-    forkJoinPoolC(n)(Sync[F].point(ForkJoinPool.defaultForkJoinWorkerThreadFactory))
+    forkJoinPoolC(n)(ForkJoinPool.defaultForkJoinWorkerThreadFactory)
 
   def forkJoinPoolC[F[_]: Sync](n: Int)(
-      threadFactory: F[ForkJoinWorkerThreadFactory]): Resource[F, ExecutorService] =
+      threadFactory: ForkJoinWorkerThreadFactory): Resource[F, ExecutorService] =
     executorServiceResource(forkJoinPoolUnsafe(n, threadFactory))
 
   private def executorServiceResource[F[_]: Sync](
@@ -83,43 +88,34 @@ object Executors {
         }
       }
 
-    def unboundExecutorUnsafe[F[_]: Sync](threadFactory: F[ThreadFactory]): F[ExecutorService] = {
+    def unboundExecutorUnsafe[F[_]: Sync](threadFactory: ThreadFactory): F[ExecutorService] = {
       //delay used to avoid eager evaluation in case that instance is ignored by the configurer
 
-      threadFactory.flatMap { factory =>
-        Sync[F].delay {
-          E.newCachedThreadPool(factory)
-        }
+      Sync[F].delay {
+        E.newCachedThreadPool(threadFactory)
       }
     }
 
     def fixedPoolExecutorUnsafe[F[_]: Sync](
         n: Int,
-        threadFactory: F[ThreadFactory]): F[ExecutorService] = {
-      threadFactory.flatMap { factory =>
-        Sync[F].delay { E.newFixedThreadPool(n, factory) }
-      }
-    }
+        threadFactory: ThreadFactory): F[ExecutorService] =
+      Sync[F].delay { E.newFixedThreadPool(n, threadFactory) }
 
     def workStealingPoolUnsafe[F[_]: Sync](
         n: Int,
-        threadFactory: F[ForkJoinWorkerThreadFactory]): F[ExecutorService] = {
+        threadFactory: ForkJoinWorkerThreadFactory): F[ExecutorService] = {
 
-      threadFactory.flatMap { factory =>
-        Sync[F].delay {
-          new ForkJoinPool(n, factory, null, true)
-        }
+      Sync[F].delay {
+        new ForkJoinPool(n, threadFactory, null, true)
       }
     }
 
     def forkJoinPoolUnsafe[F[_]: Sync](
         n: Int,
-        threadFactory: F[ForkJoinWorkerThreadFactory]): F[ExecutorService] = {
+        threadFactory: ForkJoinWorkerThreadFactory): F[ExecutorService] = {
 
-      threadFactory.flatMap { factory =>
-        Sync[F].delay {
-          new ForkJoinPool(n, factory, null, false)
-        }
+      Sync[F].delay {
+        new ForkJoinPool(n, threadFactory, null, false)
       }
     }
   }
