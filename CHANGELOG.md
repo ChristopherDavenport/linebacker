@@ -8,6 +8,8 @@ This file summarizes **notable** changes for each release, but does not describe
 
 ## <a name="0.2.0"></a>New and Noteworthy for Version 0.2.0
 
+Many thanks to Jakub Kozłowski and Taylor Brown for their contributions to this release.
+
 Updates for new features available in upstream libraries.
 
 - [#32](https://github.com/ChristopherDavenport/linebacker/pull/32) Uses utilities exposed via `ContextShift` to provide the shifting construct in a non-implementation dependent way(such that fairness guarantees of the context may not make asumptions valid).
