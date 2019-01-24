@@ -1,6 +1,8 @@
 package io.chrisdavenport.linebacker
 
 import cats.effect._
+import cats.effect.concurrent.Semaphore
+import cats.implicits._
 import java.util.concurrent.ExecutorService
 import scala.concurrent.ExecutionContext
 
@@ -13,7 +15,7 @@ trait Linebacker[F[_]] {
    * Then shifts back to the F to the Context Shift
    * Requires Implicit ContextShift Available
    */
-  final def blockContextShift[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
+  def blockContextShift[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
     cs.evalOn(blockingContext)(fa)
 
   /**
@@ -31,5 +33,14 @@ object Linebacker {
   }
   def fromExecutionContext[F[_]](ec: ExecutionContext): Linebacker[F] = new Linebacker[F] {
     def blockingContext = ec
+  }
+
+  def bounded[F[_]: Concurrent](lb: Linebacker[F], bound: Long): F[Linebacker[F]] = 
+    Semaphore[F](bound).map(new BoundedLinebacker(lb, _))
+
+  private class BoundedLinebacker[F[_]: Concurrent](lb: Linebacker[F], s: Semaphore[F]) extends Linebacker[F]{
+    def blockingContext: ExecutionContext = lb.blockingContext
+    override def blockContextShift[A](fa: F[A])(implicit cs: ContextShift[F]): F[A] =
+      s.withPermit(lb.blockContextShift(fa))
   }
 }
