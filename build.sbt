@@ -3,7 +3,7 @@ import microsites.ExtraMdFileConfig
 lazy val repository = project
   .in(file("."))
   .settings(commonSettings, releaseSettings, skipOnPublishSettings)
-  .aggregate(linebacker, microsite)
+  .aggregate(linebacker)
 
 lazy val linebacker = project
   .in(file("linebacker"))
@@ -26,8 +26,8 @@ lazy val contributors = Seq(
 
 lazy val commonSettings = Seq(
   organization := "io.chrisdavenport",
-  scalaVersion := "2.12.6",
-  crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
+  scalaVersion := "2.12.8",
+  crossScalaVersions := Seq("2.13.0-M5", scalaVersion.value, "2.11.12"),
   scalacOptions += "-Yrangepos",
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.9" cross CrossVersion.binary),
   libraryDependencies ++= Seq(
