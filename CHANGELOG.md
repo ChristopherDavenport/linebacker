@@ -6,6 +6,17 @@ This file summarizes **notable** changes for each release, but does not describe
 
 ## <a name="Unreleased"></a>Unreleased Changes
 
+## <a name="0.2.1"></a>New and Noteworthy for Version 0.2.1
+
+Features:
+
+- [#60](https://github.com/ChristopherDavenport/linebacker/pull/60) Bounded Builder for DualContext/Linebacker that limits the number of running blocking operations at once.
+
+Dependencies: 
+
+- cats-effect 1.3.1
+
+
 ## <a name="0.2.0"></a>New and Noteworthy for Version 0.2.0
 
 Many thanks to Jakub Kozłowski and Taylor Brown for their contributions to this release.
