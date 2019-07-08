@@ -2,7 +2,6 @@ sudo: false
 language: scala
 
 scala:
-  - 2.13.0-M5
   - 2.12.8
   - 2.11.12
 
@@ -20,8 +19,8 @@ install:
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION test
-  - test $TRAVIS_SCALA_VERSION == "2.13.0-M5" || sbt ++$TRAVIS_SCALA_VERSION mimaReportBinaryIssues
-  - test $TRAVIS_SCALA_VERSION == "2.13.0-M5" || sbt ++$TRAVIS_SCALA_VERSION microsite/makeMicrosite
+  - sbt ++$TRAVIS_SCALA_VERSION mimaReportBinaryIssues
+  - sbt ++$TRAVIS_SCALA_VERSION microsite/makeMicrosite
 
 after_success:
 - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && test $TRAVIS_REPO_SLUG == "ChristopherDavenport/linebacker" && sbt ++$TRAVIS_SCALA_VERSION publish
