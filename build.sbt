@@ -32,7 +32,7 @@ lazy val commonSettings = Seq(
   scalacOptions += "-Yrangepos",
   addCompilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "1.3.1",
+    "org.typelevel" %% "cats-effect" % "1.4.0",
     "org.specs2"    %% "specs2-core" % "4.6.0" % Test
   )
 )
