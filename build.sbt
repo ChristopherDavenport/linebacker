@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-effect" % "2.0.0",
-    "org.specs2"    %% "specs2-core" % "4.7.0" % Test
+    "org.specs2"    %% "specs2-core" % "4.7.1" % Test
   )
 )
 
