@@ -76,7 +76,7 @@ lazy val releaseSettings = {
           password
         )
     ).toSeq,
-    publishArtifact in Test := false,
+    (Test / publishArtifact) := false,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     scmInfo := Some(
       ScmInfo(
@@ -134,8 +134,8 @@ lazy val micrositeSettings = Seq(
     file("CODE_OF_CONDUCT.md")  -> ExtraMdFileConfig("code-of-conduct.md",   "page", Map("title" -> "code of conduct",   "section" -> "code of conduct",   "position" -> "101")),
     file("LICENSE")             -> ExtraMdFileConfig("license.md", "page", Map("title" -> "license", "section" -> "license", "position" -> "102"))
   ),
-  fork in tut := true,
-  scalacOptions in Tut --= Seq(
+  (tut / fork) := true,
+  (Tut / scalacOptions) --= Seq(
     "-Xfatal-warnings",
     "-Ywarn-unused-import",
     "-Ywarn-numeric-widen",
@@ -202,7 +202,7 @@ lazy val mimaSettings = {
 }
 
 lazy val skipOnPublishSettings = Seq(
-  skip in publish := true,
+  (publish / skip) := true,
   publish := (()),
   publishLocal := (()),
   publishArtifact := false,
